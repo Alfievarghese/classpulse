@@ -7,15 +7,6 @@ import { motion } from 'framer-motion'
 
 export const LandingPage = () => {
     const navigate = useNavigate()
-    const [showJoin, setShowJoin] = useState(false)
-    const [code, setCode] = useState('')
-
-    const handleQuickJoin = (e) => {
-        e.preventDefault()
-        if (code.length === 4) {
-            navigate(`/join?code=${code}`)
-        }
-    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-academic-navy via-academic-blue to-academic-sky">
@@ -32,38 +23,6 @@ export const LandingPage = () => {
                     <h1 className="text-6xl font-bold text-white mb-4">ClassPulse</h1>
                     <p className="text-2xl text-white/90">Real-time Classroom Feedback System</p>
                     <p className="text-lg text-white/70 mt-2">Anonymous voting • Live updates • Better engagement</p>
-                </motion.div>
-
-                {/* Quick Join Bar */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="mb-12"
-                >
-                    <Card className="bg-white/10 backdrop-blur-lg border-white/20 p-8">
-                        <form onSubmit={handleQuickJoin} className="flex gap-4 items-center">
-                            <div className="flex-1">
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={4}
-                                    value={code}
-                                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                                    placeholder="0 0 0 0"
-                                    className="w-full px-6 py-4 text-3xl font-bold text-center tracking-widest rounded-lg border-2 border-white/30 bg-white text-academic-navy placeholder-gray-300 focus:outline-none focus:ring-4 focus:ring-emerald-500 focus:border-emerald-500"
-                                />
-                            </div>
-                            <Button
-                                type="submit"
-                                disabled={code.length !== 4}
-                                size="lg"
-                                className="px-8 bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
-                            >
-                                Join Session
-                            </Button>
-                        </form>
-                    </Card>
                 </motion.div>
 
                 {/* Main Options */}
