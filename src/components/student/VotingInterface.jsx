@@ -16,6 +16,9 @@ export const VotingInterface = () => {
     const navigate = useNavigate()
     const { topics, loading } = useRealtimeTopics(sessionId)
     const [session, setSession] = useState(null)
+    const [votedTopics, setVotedTopics] = useState(new Map())
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [showConfirmation, setShowConfirmation] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [processingTopicId, setProcessingTopicId] = useState(null)
 
