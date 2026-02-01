@@ -57,12 +57,12 @@ export const TeacherDashboard = () => {
             const currentlyHealthy = goodPercent >= 60
 
             if (previousState) {
-                // Check for improvement: was critical, now healthy
-                if (previousState.wasCritical && currentlyHealthy && !currentlyCritical) {
+                // Check for improvement: wasn't healthy, now is healthy
+                if (!previousState.wasHealthy && currentlyHealthy) {
                     newCelebrations.push({
                         id: `${topic.id}-${Date.now()}`,
                         topicName: topic.name,
-                        improvement: previousState.badCount - bad,
+                        improvement: previousState.badCount - bad, // This metric might be less relevant now, but keeping for structure
                         goodPercent
                     })
 
@@ -147,10 +147,10 @@ export const TeacherDashboard = () => {
                                 <div className="flex-1">
                                     <div className="font-bold text-lg flex items-center gap-2">
                                         <PartyPopper size={16} />
-                                        Topic Improved!
+                                        Success!
                                     </div>
                                     <div className="text-emerald-50 text-sm mt-1">
-                                        <strong>{celebration.topicName}</strong> went from struggling to {celebration.goodPercent}% clear! 🎉
+                                        Congratulations! Your students learned <strong>"{celebration.topicName}"</strong>! 🎉
                                     </div>
                                 </div>
                             </div>
@@ -242,10 +242,10 @@ export const TeacherDashboard = () => {
                     <Button
                         onClick={() => navigate(`/projector/${sessionId}`)}
                         size="lg"
-                        className="bg-white text-blue-600 hover:bg-blue-50 border-2 border-blue-200 shadow-md flex items-center gap-2"
+                        className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all text-lg px-8 py-6 rounded-2xl flex items-center gap-3"
                     >
-                        <Maximize2 size={20} />
-                        Open Projector View
+                        <Maximize2 size={24} />
+                        Launch Projector View
                     </Button>
                 </motion.div>
             </div>
