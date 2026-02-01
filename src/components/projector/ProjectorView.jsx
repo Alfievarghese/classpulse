@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { Maximize2, Minimize2, AlertCircle, CheckCircle, AlertTriangle, PartyPopper, Trophy } from 'lucide-react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Maximize2, Minimize2, AlertCircle, CheckCircle, AlertTriangle, PartyPopper, Trophy, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRealtimeTopics } from '../../hooks/useRealtimeTopics'
 import { supabase } from '../../lib/supabaseClient'
 
 export const ProjectorView = () => {
     const { sessionId } = useParams()
+    const navigate = useNavigate()
     const { topics } = useRealtimeTopics(sessionId)
     const [session, setSession] = useState(null)
     const [isFullscreen, setIsFullscreen] = useState(false)
@@ -219,13 +220,22 @@ export const ProjectorView = () => {
                         )}
                     </div>
 
-                    <button
-                        onClick={toggleFullscreen}
-                        className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-xl transition-all"
-                        aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-                    >
-                        {isFullscreen ? <Minimize2 size={32} /> : <Maximize2 size={32} />}
-                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => navigate(`/teacher/${sessionId}`)}
+                            className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-xl transition-all group"
+                            title="Exit Projector Mode"
+                        >
+                            <X size={32} className="opacity-70 group-hover:opacity-100" />
+                        </button>
+                        <button
+                            onClick={toggleFullscreen}
+                            className="bg-white/10 hover:bg-white/20 text-white p-4 rounded-xl transition-all"
+                            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+                        >
+                            {isFullscreen ? <Minimize2 size={32} /> : <Maximize2 size={32} />}
+                        </button>
+                    </div>
                 </motion.div>
 
                 {/* Topics Grid */}
