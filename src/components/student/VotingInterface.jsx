@@ -78,7 +78,23 @@ export const VotingInterface = () => {
         }
     }
 
-    // ... (keep handleAddTopic and loading check)
+    const handleAddTopic = async (topicName) => {
+        try {
+            await supabase
+                .from('topics')
+                .insert({
+                    session_id: sessionId,
+                    name: topicName,
+                    created_by_student: true,
+                    votes_bad: 0,
+                    votes_understanding: 0,
+                    votes_good: 0
+                })
+            setIsModalOpen(false)
+        } catch (error) {
+            console.error('Error adding topic:', error)
+        }
+    }
 
     const filteredTopics = topics.filter(topic =>
         topic.name.toLowerCase().includes(searchTerm.toLowerCase())
