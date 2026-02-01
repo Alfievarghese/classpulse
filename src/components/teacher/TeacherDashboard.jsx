@@ -16,6 +16,7 @@ export const TeacherDashboard = () => {
     const [copied, setCopied] = useState(false)
     const [previousTopicStates, setPreviousTopicStates] = useState(new Map())
     const [celebrations, setCelebrations] = useState([])
+    const [resolvedTopics, setResolvedTopics] = useState(new Set())
 
     useEffect(() => {
         const fetchSession = async () => {
@@ -64,6 +65,11 @@ export const TeacherDashboard = () => {
                         improvement: previousState.badCount - bad,
                         goodPercent
                     })
+
+                    // Auto-archive after celebration (6.5s delay to allow animation to finish)
+                    setTimeout(() => {
+                        setResolvedTopics(prev => new Set(prev).add(topic.id))
+                    }, 6500)
                 }
             }
 
@@ -98,7 +104,15 @@ export const TeacherDashboard = () => {
         }
     }
 
-    const totalVotes = topics.reduce((sum, t) =>
+    // Filter topics:
+    // 1. Must have at least 1 vote (total > 0)
+    // 2. Must NOT be resolved (in resolvedTopics set)
+    const activeTopics = topics.filter(topic => {
+        const total = (topic.votes_bad || 0) + (topic.votes_understanding || 0) + (topic.votes_good || 0)
+        return total > 0 && !resolvedTopics.has(topic.id)
+    })
+
+    const totalVotes = activeTopics.reduce((sum, t) =>
         sum + (t.votes_bad || 0) + (t.votes_understanding || 0) + (t.votes_good || 0), 0
     )
 
@@ -180,7 +194,7 @@ export const TeacherDashboard = () => {
                                         Teacher Dashboard
                                     </h1>
                                     <p className="text-blue-100">
-                                        {session?.teacher_name || 'Teacher'} • {topics.length} topic{topics.length !== 1 ? 's' : ''} • {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
+                                        {session?.teacher_name || 'Teacher'} • {activeTopics.length} active topic{activeTopics.length !== 1 ? 's' : ''} • {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
                                     </p>
                                 </div>
 
@@ -215,7 +229,7 @@ export const TeacherDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <HistogramChart topics={topics} />
+                    <HistogramChart topics={activeTopics} />
                 </motion.div>
 
                 {/* Projector View Button */}

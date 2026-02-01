@@ -74,13 +74,13 @@ export const LandingPage = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2 }}
                     >
-                        <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border-4 border-academic-success">
-                            <div className="p-8">
+                        <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border-2 md:border-4 border-academic-success">
+                            <div className="p-6 md:p-8">
                                 <div className="w-16 h-16 bg-academic-success/10 rounded-full flex items-center justify-center mb-6">
                                     <Users size={32} className="text-academic-success" />
                                 </div>
-                                <h2 className="text-3xl font-bold text-academic-navy mb-4">I'm a Student</h2>
-                                <p className="text-lg text-academic-slate mb-8">
+                                <h2 className="text-2xl md:text-3xl font-bold text-academic-navy mb-4">I'm a Student</h2>
+                                <p className="text-base md:text-lg text-academic-slate mb-8">
                                     Join your class session to vote on topics and provide feedback
                                 </p>
                                 <ul className="space-y-3 mb-8">
@@ -115,13 +115,13 @@ export const LandingPage = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.3 }}
                     >
-                        <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border-4 border-academic-blue">
-                            <div className="p-8">
+                        <Card className="h-full bg-white hover:shadow-2xl transition-all duration-300 border-2 md:border-4 border-academic-blue">
+                            <div className="p-6 md:p-8">
                                 <div className="w-16 h-16 bg-academic-blue/10 rounded-full flex items-center justify-center mb-6">
                                     <Presentation size={32} className="text-academic-blue" />
                                 </div>
-                                <h2 className="text-3xl font-bold text-academic-navy mb-4">I'm a Teacher</h2>
-                                <p className="text-lg text-academic-slate mb-8">
+                                <h2 className="text-2xl md:text-3xl font-bold text-academic-navy mb-4">I'm a Teacher</h2>
+                                <p className="text-base md:text-lg text-academic-slate mb-8">
                                     Create and manage classroom sessions with real-time feedback
                                 </p>
                                 <ul className="space-y-3 mb-8">

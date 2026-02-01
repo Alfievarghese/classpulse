@@ -93,20 +93,20 @@ export const JoinSession = () => {
                     transition={{ delay: 0.1 }}
                 >
                     <Card className="bg-white shadow-2xl border-0">
-                        <div className="p-12">
+                        <div className="p-6 md:p-12">
                             {/* Icon */}
                             <div className="flex justify-center mb-6">
-                                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
-                                    <LogIn size={40} className="text-white" />
+                                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-lg">
+                                    <LogIn size={32} className="text-white md:w-10 md:h-10" />
                                 </div>
                             </div>
 
                             {/* Header */}
                             <div className="text-center mb-8">
-                                <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                                <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-3">
                                     Join Session
                                 </h1>
-                                <p className="text-lg text-gray-600">
+                                <p className="text-base md:text-lg text-gray-600">
                                     Enter the 4-digit code from your teacher
                                 </p>
                             </div>
@@ -124,7 +124,7 @@ export const JoinSession = () => {
                                         placeholder="0 0 0 0"
                                         autoFocus
                                         className={`
-                                            w-full px-8 py-6 text-5xl font-bold text-center tracking-[0.5em]
+                                            w-full px-4 md:px-8 py-4 md:py-6 text-3xl md:text-5xl font-bold text-center tracking-[0.25em] md:tracking-[0.5em]
                                             rounded-2xl border-3 transition-all
                                             ${error
                                                 ? 'border-red-300 bg-red-50 text-red-600 focus:border-red-500 focus:ring-red-500'
