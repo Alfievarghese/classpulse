@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { Plus, ArrowLeft, Sparkles, X } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { VotingButtons } from './VotingButtons'
@@ -22,7 +21,43 @@ export const VotingInterface = () => {
     const [searchTerm, setSearchTerm] = useState('')
     const [processingTopicId, setProcessingTopicId] = useState(null)
 
-    // ... (keep useEffects)
+    // Fetch session details
+    useEffect(() => {
+        const fetchSession = async () => {
+            const { data, error } = await supabase
+                .from('sessions')
+                .select('*')
+                .eq('id', sessionId)
+                .single()
+
+            if (error) {
+                console.error('Error fetching session:', error)
+            } else {
+                setSession(data)
+            }
+        }
+        if (sessionId) fetchSession()
+    }, [sessionId])
+
+    // Fetch previous votes
+    useEffect(() => {
+        const fetchUserVotes = async () => {
+            const sessionToken = getSessionToken()
+            const { data, error } = await supabase
+                .from('votes')
+                .select('topic_id, vote_type')
+                .eq('session_token', sessionToken)
+
+            if (error) {
+                console.error('Error fetching votes:', error)
+            } else if (data) {
+                const voteMap = new Map()
+                data.forEach(vote => voteMap.set(vote.topic_id, vote.vote_type))
+                setVotedTopics(voteMap)
+            }
+        }
+        fetchUserVotes()
+    }, [sessionId])
 
     const handleVote = async (topicId, voteType) => {
         // Prevent multiple votes while processing
@@ -38,7 +73,7 @@ export const VotingInterface = () => {
 
         try {
             if (currentVote) {
-                // ... (delete logic)
+                // If changing vote, remove old vote first
                 await supabase.from('votes').delete().eq('topic_id', topicId).eq('session_token', sessionToken)
 
                 const decrementField = `votes_${currentVote}`
@@ -50,7 +85,7 @@ export const VotingInterface = () => {
                 }
             }
 
-            // ... (insert logic)
+            // Insert new vote
             await supabase.from('votes').insert({
                 topic_id: topicId,
                 session_token: sessionToken,
@@ -102,11 +137,24 @@ export const VotingInterface = () => {
 
     const totalTopics = topics.length
     const votedCount = topics.filter(t => votedTopics.has(t.id)).length
-    const completionPercent = totalTopics > 0 ? Math.min(100, Math.round((votedCount / totalTopics) * 100)) : 0
+    // const completionPercent = totalTopics > 0 ? Math.min(100, Math.round((votedCount / totalTopics) * 100)) : 0
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* ... (keep Toast) */}
+            {/* Success Toast */}
+            <AnimatePresence>
+                {showConfirmation && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -50 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -50 }}
+                        className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2"
+                    >
+                        <Sparkles size={20} />
+                        <span className="font-medium">Vote Recorded!</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <div className="max-w-4xl mx-auto p-4 pb-24">
                 {/* Header */}
@@ -115,9 +163,34 @@ export const VotingInterface = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="sticky top-0 bg-gray-50 z-10 pb-4 pt-4"
                 >
-                    {/* ... (keep Back Button) */}
+                    <div className="flex items-center gap-4 mb-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => navigate('/')}
+                            className="hover:bg-gray-200 rounded-full"
+                        >
+                            <ArrowLeft size={24} className="text-gray-600" />
+                        </Button>
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900">
+                                {session ? session.subject : 'Loading...'}
+                            </h1>
+                            <p className="text-gray-500 text-sm">
+                                {votedCount} of {totalTopics} topics voted
+                            </p>
+                        </div>
+                    </div>
 
-                    {/* ... (keep Progress Card) */}
+                    {/* Progress Bar */}
+                    <Card className="p-1 bg-gray-200 overflow-hidden">
+                        <motion.div
+                            className="h-2 bg-blue-500 rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${totalTopics > 0 ? (votedCount / totalTopics) * 100 : 0}%` }}
+                            transition={{ duration: 0.5 }}
+                        />
+                    </Card>
 
                     {/* Search Bar */}
                     <div className="mt-4">

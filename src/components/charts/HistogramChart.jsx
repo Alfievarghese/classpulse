@@ -151,106 +151,110 @@ export const HistogramChart = ({ topics }) => {
             <div className="bg-white rounded-2xl border-2 border-gray-100 shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Topic Breakdown</h3>
                 <div className="space-y-3">
-                    {sortedTopics.map((topic, index) => (
-                        <motion.div
-                            key={topic.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            className={`relative p-4 rounded-xl border-2 transition-all hover:shadow-md ${topic.status === 'critical'
-                                ? 'bg-red-50/50 border-red-200 hover:border-red-300'
-                                : topic.status === 'caution'
-                                    ? 'bg-amber-50/50 border-amber-200 hover:border-amber-300'
-                                    : topic.status === 'healthy'
-                                        ? 'bg-emerald-50/50 border-emerald-200 hover:border-emerald-300'
-                                        : 'bg-gray-50 border-gray-200 hover:border-gray-300'
-                                }`}
-                        >
-                            {/* Header */}
-                            <div className="flex items-start justify-between gap-4 mb-3">
-                                <div className="flex items-center gap-3 flex-1">
-                                    {/* Status Dot */}
-                                    <div className={`flex-shrink-0 text-${topic.statusColor}-500`}>
-                                        {topic.statusIcon || <div className="w-5 h-5 rounded-full bg-gray-300" />}
-                                    </div>
-
-                                    {/* Topic Name */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="font-semibold text-gray-900 text-lg truncate">
-                                                {topic.name}
-                                            </h4>
-                                            {topic.status === 'healthy' && <Sparkles className="w-4 h-4 text-emerald-500" />}
+                    <AnimatePresence mode="popLayout">
+                        {sortedTopics.map((topic, index) => (
+                            <motion.div
+                                key={topic.id}
+                                layout
+                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                transition={{ delay: index * 0.05 }}
+                                className={`relative p-4 rounded-xl border-2 transition-all hover:shadow-md ${topic.status === 'critical'
+                                    ? 'bg-red-50/50 border-red-200 hover:border-red-300'
+                                    : topic.status === 'caution'
+                                        ? 'bg-amber-50/50 border-amber-200 hover:border-amber-300'
+                                        : topic.status === 'healthy'
+                                            ? 'bg-emerald-50/50 border-emerald-200 hover:border-emerald-300'
+                                            : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                                    }`}
+                            >
+                                {/* Header */}
+                                <div className="flex items-start justify-between gap-4 mb-3">
+                                    <div className="flex items-center gap-3 flex-1">
+                                        {/* Status Dot */}
+                                        <div className={`flex-shrink-0 text-${topic.statusColor}-500`}>
+                                            {topic.statusIcon || <div className="w-5 h-5 rounded-full bg-gray-300" />}
                                         </div>
-                                        <p className={`text-sm font-medium text-${topic.statusColor}-600 mt-0.5`}>
-                                            {topic.statusText}
-                                        </p>
-                                    </div>
-                                </div>
 
-                                {/* Vote Count */}
-                                <div className="text-right flex-shrink-0">
-                                    <p className="text-2xl font-bold text-gray-900">{topic.total}</p>
-                                    <p className="text-xs text-gray-500">vote{topic.total !== 1 ? 's' : ''}</p>
-                                </div>
-                            </div>
-
-                            {/* Progress Bar */}
-                            {topic.total > 0 && (
-                                <div className="space-y-2">
-                                    <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex">
-                                        {topic.good > 0 && (
-                                            <motion.div
-                                                initial={{ flex: 0 }}
-                                                animate={{ flex: topic.good }}
-                                                transition={{ duration: 0.6, delay: index * 0.03 }}
-                                                className="bg-emerald-500 h-full"
-                                            />
-                                        )}
-                                        {topic.understanding > 0 && (
-                                            <motion.div
-                                                initial={{ flex: 0 }}
-                                                animate={{ flex: topic.understanding }}
-                                                transition={{ duration: 0.6, delay: index * 0.03 + 0.1 }}
-                                                className="bg-amber-500 h-full"
-                                            />
-                                        )}
-                                        {topic.bad > 0 && (
-                                            <motion.div
-                                                initial={{ flex: 0 }}
-                                                animate={{ flex: topic.bad }}
-                                                transition={{ duration: 0.6, delay: index * 0.03 + 0.2 }}
-                                                className="bg-red-500 h-full"
-                                            />
-                                        )}
-                                    </div>
-
-                                    {/* Vote Breakdown */}
-                                    <div className="flex items-center justify-between text-xs">
-                                        <div className="flex items-center gap-4">
-                                            <span className="flex items-center gap-1.5 text-red-600">
-                                                <span className="w-2 h-2 bg-red-500 rounded-full" />
-                                                {topic.bad} 😟
-                                            </span>
-                                            <span className="flex items-center gap-1.5 text-amber-600">
-                                                <span className="w-2 h-2 bg-amber-500 rounded-full" />
-                                                {topic.understanding} 🤔
-                                            </span>
-                                            <span className="flex items-center gap-1.5 text-emerald-600">
-                                                <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-                                                {topic.good} 😊
-                                            </span>
+                                        {/* Topic Name */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-semibold text-gray-900 text-lg truncate">
+                                                    {topic.name}
+                                                </h4>
+                                                {topic.status === 'healthy' && <Sparkles className="w-4 h-4 text-emerald-500" />}
+                                            </div>
+                                            <p className={`text-sm font-medium text-${topic.statusColor}-600 mt-0.5`}>
+                                                {topic.statusText}
+                                            </p>
                                         </div>
-                                        {topic.created_by_student && (
-                                            <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full font-medium">
-                                                Student-added
-                                            </span>
-                                        )}
+                                    </div>
+
+                                    {/* Vote Count */}
+                                    <div className="text-right flex-shrink-0">
+                                        <p className="text-2xl font-bold text-gray-900">{topic.total}</p>
+                                        <p className="text-xs text-gray-500">vote{topic.total !== 1 ? 's' : ''}</p>
                                     </div>
                                 </div>
-                            )}
-                        </motion.div>
-                    ))}
+
+                                {/* Progress Bar */}
+                                {topic.total > 0 && (
+                                    <div className="space-y-2">
+                                        <div className="h-3 bg-gray-200 rounded-full overflow-hidden flex">
+                                            {topic.good > 0 && (
+                                                <motion.div
+                                                    initial={{ flex: 0 }}
+                                                    animate={{ flex: topic.good }}
+                                                    transition={{ duration: 0.6, delay: index * 0.03 }}
+                                                    className="bg-emerald-500 h-full"
+                                                />
+                                            )}
+                                            {topic.understanding > 0 && (
+                                                <motion.div
+                                                    initial={{ flex: 0 }}
+                                                    animate={{ flex: topic.understanding }}
+                                                    transition={{ duration: 0.6, delay: index * 0.03 + 0.1 }}
+                                                    className="bg-amber-500 h-full"
+                                                />
+                                            )}
+                                            {topic.bad > 0 && (
+                                                <motion.div
+                                                    initial={{ flex: 0 }}
+                                                    animate={{ flex: topic.bad }}
+                                                    transition={{ duration: 0.6, delay: index * 0.03 + 0.2 }}
+                                                    className="bg-red-500 h-full"
+                                                />
+                                            )}
+                                        </div>
+
+                                        {/* Vote Breakdown */}
+                                        <div className="flex items-center justify-between text-xs">
+                                            <div className="flex items-center gap-4">
+                                                <span className="flex items-center gap-1.5 text-red-600">
+                                                    <span className="w-2 h-2 bg-red-500 rounded-full" />
+                                                    {topic.bad} 😟
+                                                </span>
+                                                <span className="flex items-center gap-1.5 text-amber-600">
+                                                    <span className="w-2 h-2 bg-amber-500 rounded-full" />
+                                                    {topic.understanding} 🤔
+                                                </span>
+                                                <span className="flex items-center gap-1.5 text-emerald-600">
+                                                    <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                                                    {topic.good} 😊
+                                                </span>
+                                            </div>
+                                            {topic.created_by_student && (
+                                                <span className="text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full font-medium">
+                                                    Student-added
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
