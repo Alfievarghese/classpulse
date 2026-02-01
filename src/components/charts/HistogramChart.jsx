@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AlertCircle, CheckCircle, AlertTriangle, Sparkles } from 'lucide-react'
 
 export const HistogramChart = ({ topics }) => {
