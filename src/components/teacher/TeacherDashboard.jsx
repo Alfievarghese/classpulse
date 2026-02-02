@@ -148,48 +148,70 @@ export const TeacherDashboard = () => {
 
             if (error) throw error
 
-            // --- SECTION 1: TOPIC SUMMARY ---
-            const summaryHeaders = ['Topic Name', 'Created At', 'Duration (Mins)', 'Total Bad Votes', 'Total Good Votes', 'Final Status', 'Peak Confusion (Max Bad)']
+            // --- SECTION 1: TOPIC PERFORMANCE ANALYSIS ---
+            const summaryHeaders = [
+                'Learning Topic',
+                'Introduction Timestamp',
+                'Active Duration (Mins)',
+                'Total Interactions',
+                'Confusion Indicators (Negative)',
+                'Comprehension Confirmations (Positive)',
+                'Comprehension Index (-1.0 to +1.0)',
+                'Outcome Status'
+            ]
 
             const summaryRows = topics.map(topic => {
                 const createdAt = new Date(topic.created_at)
                 const now = new Date()
                 const durationMins = Math.round((now - createdAt) / 60000)
 
-                // Calculate simple metrics (cumulative)
                 const totalBad = topic.votes_bad || 0
+                const totalUnderstanding = topic.votes_understanding || 0
                 const totalGood = topic.votes_good || 0
+                const totalInteractions = totalBad + totalUnderstanding + totalGood
 
-                // Determine status text
-                let status = 'Active'
-                const total = totalBad + (topic.votes_understanding || 0) + totalGood
-                if (total > 0) {
-                    const badPercent = (totalBad / total) * 100
-                    const goodPercent = (totalGood / total) * 100
-                    if (goodPercent >= 60) status = 'Resolved (Success)'
-                    else if (badPercent > 40) status = 'Critical (Needs Help)'
-                    else status = 'In Progress'
+                // Calculate Comprehension Index: (Good - Bad) / Total
+                // Range: -1.0 (All Bad) to +1.0 (All Good)
+                let compIndex = 0
+                if (totalInteractions > 0) {
+                    compIndex = ((totalGood - totalBad) / totalInteractions).toFixed(2)
+                }
+
+                let status = 'Active / Inconclusive'
+                if (totalInteractions > 0) {
+                    const badPercent = (totalBad / totalInteractions) * 100
+                    const goodPercent = (totalGood / totalInteractions) * 100
+                    if (goodPercent >= 60) status = 'Objective Met (High Comprehension)'
+                    else if (badPercent > 40) status = 'Remediation Required (Low Comprehension)'
                 }
 
                 return [
-                    `"${topic.name.replace(/"/g, '""')}"`, // Escape quotes
-                    `"${createdAt.toLocaleString()}"`, // Quote dates to handle commas
-                    `"${durationMins} min"`,
+                    `"${topic.name.replace(/"/g, '""')}"`,
+                    `"${createdAt.toLocaleString()}"`,
+                    durationMins,
+                    totalInteractions,
                     totalBad,
                     totalGood,
-                    `"${status}"`,
-                    totalBad // Using cumulative bad as proxy for "Peak Confusion" in this simple view
+                    compIndex,
+                    `"${status}"`
                 ]
             })
 
-            // --- SECTION 2: DETAILED VOTE LOG ---
-            const logHeaders = ['Time', 'Topic Name', 'Vote Choice', 'Vote ID']
+            // --- SECTION 2: DETAILED INTERACTION LOG ---
+            const logHeaders = ['Timestamp', 'Learning Topic', 'Interaction Type', 'Transaction ID']
             const logRows = allVotes.map(vote => {
                 const topic = topics.find(t => t.id === vote.topic_id)
+
+                // Map internal types to formal terms
+                let formalType = 'Neutral'
+                if (vote.vote_type === 'bad') formalType = 'Negative (Confusion)'
+                if (vote.vote_type === 'good') formalType = 'Positive (Comprehension)'
+                if (vote.vote_type === 'understanding') formalType = 'Neutral (Processing)'
+
                 return [
-                    `"${new Date(vote.created_at).toLocaleString()}"`, // Quote dates
+                    `"${new Date(vote.created_at).toLocaleString()}"`,
                     `"${(topic?.name || 'Unknown').replace(/"/g, '""')}"`,
-                    vote.vote_type.toUpperCase(),
+                    `"${formalType}"`,
                     vote.id
                 ]
             })
@@ -198,8 +220,8 @@ export const TeacherDashboard = () => {
             const csvContent = [
                 summaryHeaders.join(','),
                 ...summaryRows.map(r => r.join(',')),
-                '', // Empty row separator
-                '', // Empty row separator
+                '',
+                '',
                 logHeaders.join(','),
                 ...logRows.map(r => r.join(','))
             ].join('\n')
