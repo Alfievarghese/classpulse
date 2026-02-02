@@ -149,7 +149,7 @@ export const TeacherDashboard = () => {
             if (error) throw error
 
             // --- SECTION 1: TOPIC SUMMARY ---
-            const summaryHeaders = ['TOPIC SUMMARY', 'Created At', 'Duration (Mins)', 'Total Bad Votes', 'Total Good Votes', 'Final Status', 'Peak Confusion (Max Bad)']
+            const summaryHeaders = ['Topic Name', 'Created At', 'Duration (Mins)', 'Total Bad Votes', 'Total Good Votes', 'Final Status', 'Peak Confusion (Max Bad)']
 
             const summaryRows = topics.map(topic => {
                 const createdAt = new Date(topic.created_at)
@@ -172,24 +172,23 @@ export const TeacherDashboard = () => {
                 }
 
                 return [
-                    `"${topic.name}"`,
-                    createdAt.toLocaleString(),
-                    `${durationMins} min`,
+                    `"${topic.name.replace(/"/g, '""')}"`, // Escape quotes
+                    `"${createdAt.toLocaleString()}"`, // Quote dates to handle commas
+                    `"${durationMins} min"`,
                     totalBad,
                     totalGood,
-                    status,
+                    `"${status}"`,
                     totalBad // Using cumulative bad as proxy for "Peak Confusion" in this simple view
                 ]
             })
 
             // --- SECTION 2: DETAILED VOTE LOG ---
-            const logHeaders = ['FULL VOTE LOG', 'Time', 'Topic Name', 'Vote Choice', 'Vote ID']
+            const logHeaders = ['Time', 'Topic Name', 'Vote Choice', 'Vote ID']
             const logRows = allVotes.map(vote => {
                 const topic = topics.find(t => t.id === vote.topic_id)
                 return [
-                    '', // Spacer for first col
-                    new Date(vote.created_at).toLocaleString(),
-                    `"${topic?.name || 'Unknown'}"`,
+                    `"${new Date(vote.created_at).toLocaleString()}"`, // Quote dates
+                    `"${(topic?.name || 'Unknown').replace(/"/g, '""')}"`,
                     vote.vote_type.toUpperCase(),
                     vote.id
                 ]
