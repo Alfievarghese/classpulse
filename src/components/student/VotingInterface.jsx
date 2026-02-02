@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Plus, ArrowLeft, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, Sparkles, X } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { VotingButtons } from './VotingButtons'
-import { AddTopicModal } from './AddTopicModal'
 import { useRealtimeTopics } from '../../hooks/useRealtimeTopics'
 import { supabase } from '../../lib/supabaseClient'
 import { getSessionToken } from '../../lib/sessionManager'
@@ -16,7 +15,6 @@ export const VotingInterface = () => {
     const { topics, loading } = useRealtimeTopics(sessionId)
     const [session, setSession] = useState(null)
     const [votedTopics, setVotedTopics] = useState(new Map())
-    const [isModalOpen, setIsModalOpen] = useState(false)
     const [showConfirmation, setShowConfirmation] = useState(false)
     const [searchTerm, setSearchTerm] = useState('')
     const [processingTopicId, setProcessingTopicId] = useState(null)
@@ -59,9 +57,22 @@ export const VotingInterface = () => {
         fetchUserVotes()
     }, [sessionId])
 
+    // Map to track last vote timestamp for each topic to prevent spam
+    const [lastVoteTimestamps, setLastVoteTimestamps] = useState(new Map())
+
     const handleVote = async (topicId, voteType) => {
-        // Prevent multiple votes while processing
+        // Prevent spam: Check strict 1.5s cooldown
+        const now = Date.now()
+        const lastVoteTime = lastVoteTimestamps.get(topicId) || 0
+        if (now - lastVoteTime < 1500) {
+            return // Ignore click if too fast
+        }
+
+        // Prevent multiple concurrent requests
         if (processingTopicId === topicId) return
+
+        // Update timestamp immediately
+        setLastVoteTimestamps(prev => new Map(prev).set(topicId, now))
 
         const sessionToken = getSessionToken()
         const currentVote = votedTopics.get(topicId)
@@ -113,23 +124,7 @@ export const VotingInterface = () => {
         }
     }
 
-    const handleAddTopic = async (topicName) => {
-        try {
-            await supabase
-                .from('topics')
-                .insert({
-                    session_id: sessionId,
-                    name: topicName,
-                    created_by_student: true,
-                    votes_bad: 0,
-                    votes_understanding: 0,
-                    votes_good: 0
-                })
-            setIsModalOpen(false)
-        } catch (error) {
-            console.error('Error adding topic:', error)
-        }
-    }
+
 
     const filteredTopics = topics.filter(topic =>
         topic.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -176,9 +171,13 @@ export const VotingInterface = () => {
                             <h1 className="text-2xl font-bold text-gray-900">
                                 {session ? session.subject : 'Loading...'}
                             </h1>
-                            <p className="text-gray-500 text-sm">
-                                {votedCount} of {totalTopics} topics voted
-                            </p>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <span className="font-mono bg-gray-200 px-2 py-0.5 rounded text-gray-700 font-bold">
+                                    {session?.code}
+                                </span>
+                                <span>•</span>
+                                <span>{votedCount} of {totalTopics} topics voted</span>
+                            </div>
                         </div>
                     </div>
 
@@ -223,7 +222,7 @@ export const VotingInterface = () => {
                             </p>
                             {!searchTerm && (
                                 <p className="text-gray-400 text-sm mt-2">
-                                    Be the first to add one!
+                                    Wait for your teacher to add topics!
                                 </p>
                             )}
                         </Card>
@@ -268,32 +267,9 @@ export const VotingInterface = () => {
                         ))
                     )}
                 </div>
-
-                {/* Add Topic Button */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + topics.length * 0.05 }}
-                    className="mt-6"
-                >
-                    <Button
-                        onClick={() => setIsModalOpen(true)}
-                        variant="outline"
-                        size="lg"
-                        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 border-2 border-dashed border-gray-300 hover:border-blue-400"
-                    >
-                        <Plus size={20} />
-                        Suggest a Topic
-                    </Button>
-                </motion.div>
             </div>
 
-            {/* Add Topic Modal */}
-            <AddTopicModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onAdd={handleAddTopic}
-            />
+
         </div>
     )
 }
