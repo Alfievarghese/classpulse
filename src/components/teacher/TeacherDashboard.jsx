@@ -107,9 +107,17 @@ export const TeacherDashboard = () => {
     // Filter topics:
     // 1. Must have at least 1 vote (total > 0)
     // 2. Must NOT be resolved (in resolvedTopics set)
+    // 3. User Rule: Only show if "Need Help" (Bad) > 40% OR if it's about to be celebrated (> 60% Good)
     const activeTopics = topics.filter(topic => {
         const total = (topic.votes_bad || 0) + (topic.votes_understanding || 0) + (topic.votes_good || 0)
-        return total > 0 && !resolvedTopics.has(topic.id)
+        if (total === 0) return false
+        if (resolvedTopics.has(topic.id)) return false
+
+        const badPercent = (topic.votes_bad / total) * 100
+        const goodPercent = (topic.votes_good / total) * 100
+
+        // Show if critical (bad > 40%) OR if healthy/celebrating (good > 60%)
+        return badPercent > 40 || goodPercent >= 60
     })
 
     const totalVotes = activeTopics.reduce((sum, t) =>
