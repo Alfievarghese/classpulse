@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Maximize2, Copy, Check, ArrowLeft, PartyPopper, Trophy } from 'lucide-react'
+import { Maximize2, Copy, Check, ArrowLeft, PartyPopper, Trophy, Download } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { HistogramChart } from '../charts/HistogramChart'
@@ -135,6 +135,91 @@ export const TeacherDashboard = () => {
         )
     }
 
+    const handleDownloadReport = async () => {
+        try {
+            if (!topics.length) return
+
+            const topicIds = topics.map(t => t.id)
+            const { data: allVotes, error } = await supabase
+                .from('votes')
+                .select('*')
+                .in('topic_id', topicIds)
+                .order('created_at', { ascending: true })
+
+            if (error) throw error
+
+            // --- SECTION 1: TOPIC SUMMARY ---
+            const summaryHeaders = ['TOPIC SUMMARY', 'Created At', 'Duration (Mins)', 'Total Bad Votes', 'Total Good Votes', 'Final Status', 'Peak Confusion (Max Bad)']
+
+            const summaryRows = topics.map(topic => {
+                const createdAt = new Date(topic.created_at)
+                const now = new Date()
+                const durationMins = Math.round((now - createdAt) / 60000)
+
+                // Calculate simple metrics (cumulative)
+                const totalBad = topic.votes_bad || 0
+                const totalGood = topic.votes_good || 0
+
+                // Determine status text
+                let status = 'Active'
+                const total = totalBad + (topic.votes_understanding || 0) + totalGood
+                if (total > 0) {
+                    const badPercent = (totalBad / total) * 100
+                    const goodPercent = (totalGood / total) * 100
+                    if (goodPercent >= 60) status = 'Resolved (Success)'
+                    else if (badPercent > 40) status = 'Critical (Needs Help)'
+                    else status = 'In Progress'
+                }
+
+                return [
+                    `"${topic.name}"`,
+                    createdAt.toLocaleString(),
+                    `${durationMins} min`,
+                    totalBad,
+                    totalGood,
+                    status,
+                    totalBad // Using cumulative bad as proxy for "Peak Confusion" in this simple view
+                ]
+            })
+
+            // --- SECTION 2: DETAILED VOTE LOG ---
+            const logHeaders = ['FULL VOTE LOG', 'Time', 'Topic Name', 'Vote Choice', 'Vote ID']
+            const logRows = allVotes.map(vote => {
+                const topic = topics.find(t => t.id === vote.topic_id)
+                return [
+                    '', // Spacer for first col
+                    new Date(vote.created_at).toLocaleString(),
+                    `"${topic?.name || 'Unknown'}"`,
+                    vote.vote_type.toUpperCase(),
+                    vote.id
+                ]
+            })
+
+            // Combine into CSV
+            const csvContent = [
+                summaryHeaders.join(','),
+                ...summaryRows.map(r => r.join(',')),
+                '', // Empty row separator
+                '', // Empty row separator
+                logHeaders.join(','),
+                ...logRows.map(r => r.join(','))
+            ].join('\n')
+
+            // Trigger Download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+            const url = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.setAttribute('href', url)
+            link.setAttribute('download', `${session.subject.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_full_report.csv`)
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        } catch (err) {
+            console.error('Error downloading report:', err)
+            alert('Failed to download report. Please try again.')
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 p-4 md:p-8">
             {/* Celebration Notifications */}
@@ -182,6 +267,14 @@ export const TeacherDashboard = () => {
                     >
                         <ArrowLeft size={16} />
                         Back to Home
+                    </Button>
+
+                    <Button
+                        onClick={handleDownloadReport}
+                        className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white shadow-sm"
+                    >
+                        <Download size={16} />
+                        Download Full Report
                     </Button>
                 </motion.div>
 
