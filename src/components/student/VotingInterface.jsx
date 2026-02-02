@@ -57,25 +57,18 @@ export const VotingInterface = () => {
         fetchUserVotes()
     }, [sessionId])
 
-    // Map to track last vote timestamp for each topic to prevent spam
-    const [lastVoteTimestamps, setLastVoteTimestamps] = useState(new Map())
+
 
     const handleVote = async (topicId, voteType) => {
-        // Prevent spam: Check strict 1.5s cooldown
-        const now = Date.now()
-        const lastVoteTime = lastVoteTimestamps.get(topicId) || 0
-        if (now - lastVoteTime < 1500) {
-            return // Ignore click if too fast
-        }
+        const currentVote = votedTopics.get(topicId)
+
+        // Block re-voting the same option (One-time tap per option)
+        if (currentVote === voteType) return
 
         // Prevent multiple concurrent requests
         if (processingTopicId === topicId) return
 
-        // Update timestamp immediately
-        setLastVoteTimestamps(prev => new Map(prev).set(topicId, now))
-
         const sessionToken = getSessionToken()
-        const currentVote = votedTopics.get(topicId)
 
         // Optimistic update
         setProcessingTopicId(topicId)
